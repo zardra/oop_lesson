@@ -34,6 +34,27 @@ class SliderRock(Rock):
             return (self.x+1, self.y)
         return None
 
+    def interact(self, player):
+        
+        # Check if element in next spot is rock that can move
+        next_location_slider = self.next_pos(PLAYER.last_direction)
+        next_slider_x = next_location_slider[0]
+        next_slider_y = next_location_slider[1]
+
+        # Check if slider rock will go off the board
+        if 0 <= next_slider_x < GAME_WIDTH and 0 <= next_slider_y < GAME_HEIGHT:
+            # Check if there is a game element in the next spot
+            neighbor_el = GAME_BOARD.get_el(next_slider_x, next_slider_y)
+            if neighbor_el == None:
+                GAME_BOARD.del_el(self.x, self.y)
+                GAME_BOARD.set_el(next_slider_x, next_slider_y, self)
+            else: 
+                self.SOLID = True
+        # If slider rock will go off the board, make it solid
+        else:
+            self.SOLID = True
+
+
 class Character(GameElement):
     def __init__(self):
         GameElement.__init__(self)
@@ -53,6 +74,28 @@ class Character(GameElement):
             return (self.x+1, self.y)
         return None
 
+    def move(self, direction):
+        # print "Calling the move function"
+        next_location = self.next_pos(direction)
+        next_x = next_location[0]
+        next_y = next_location[1]
+
+        # print next_x, next_y
+
+        if 0 <= next_x < GAME_WIDTH and 0 <= next_y < GAME_HEIGHT:
+            
+            #Check for game elements in next location
+            existing_el = GAME_BOARD.get_el(next_x, next_y)
+
+            #If there is a game element, call it's interact method
+            if existing_el:
+                existing_el.interact(self)
+    
+            if existing_el is None or not existing_el.SOLID:
+                GAME_BOARD.del_el(self.x, self.y)
+                GAME_BOARD.set_el(next_x, next_y, self)
+                
+
 class Gem(GameElement):
     
     # how to add gems to a player's inventory
@@ -69,7 +112,7 @@ class Key(GameElement):
     def interact(self, player):
         player.inventory.append(self)
         GAME_BOARD.draw_msg("You just acquired a key!")
-        print player.inventory
+        # print player.inventory
 
     IMAGE = "Key"
     SOLID = False
@@ -176,12 +219,11 @@ def initialize():
     global PLAYER
     PLAYER = Character()
     GAME_BOARD.register(PLAYER)
-    #GAME_BOARD.set_el(2, 2, PLAYER)
+
     rand_x = randint(1, 7)
     rand_y = randint(0, 7)
 
     while GAME_BOARD.get_el(rand_x, rand_y):
-    #while rand_x == PLAYER.x or rand_y == PLAYER.y:
         rand_x = randint(1, 7)
         rand_y = randint(0, 7)
     else:
@@ -195,7 +237,6 @@ def initialize():
     rand_y = randint(1, 3)
 
     while GAME_BOARD.get_el(rand_x, rand_y):
-    #while rand_x == PLAYER.x or rand_y == PLAYER.y:
         rand_x = randint(1, 6)
         rand_y = randint(1, 3)
     else:
@@ -216,50 +257,12 @@ def keyboard_handler():
     elif KEYBOARD[key.RIGHT]:
         direction = "right"
     
+
     # moves a character if allowed
     if direction:
-        next_location = PLAYER.next_pos(direction)
-        next_x = next_location[0]
-        next_y = next_location[1]
-
+        PLAYER.last_direction = direction
+        PLAYER.move(direction)
         GAME_BOARD.erase_msg()
-
-        # looks at next spot on the board
-        if 0 <= next_x < GAME_WIDTH and 0 <= next_y < GAME_WIDTH:
-
-            existing_el = GAME_BOARD.get_el(next_x, next_y)
-
-            # interact with player
-            if existing_el:
-                existing_el.interact(PLAYER)
-
-            # Check if element in next spot is rock that can move
-            if type(existing_el) == SliderRock:
-                next_location_slider = existing_el.next_pos(direction)
-                next_slider_x = next_location_slider[0]
-                next_slider_y = next_location_slider[1]
-
-                # Check if slider rock will go off the board
-                if 0 <= next_slider_x < GAME_WIDTH and 0 <= next_slider_y < GAME_WIDTH:
-                    # Check if there is a game element in the next spot
-                    neighbor_el = GAME_BOARD.get_el(next_slider_x, next_slider_y)
-                    if neighbor_el == None:
-                        GAME_BOARD.del_el(existing_el.x, existing_el.y)
-                        GAME_BOARD.set_el(next_slider_x, next_slider_y, existing_el)
-                    else: 
-                        existing_el.SOLID = True
-                # If slider rock will go off the board, make it solid
-                else:
-                    existing_el.SOLID = True
-
-
-            # check if the Player can move to the next spot
-            if existing_el is None or not existing_el.SOLID:
-                GAME_BOARD.del_el(PLAYER.x, PLAYER.y)
-                GAME_BOARD.set_el(next_x, next_y, PLAYER)
-
-        else:
-            GAME_BOARD.draw_msg("Don't go off the board!")
 
 
 
