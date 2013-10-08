@@ -5,6 +5,7 @@ from core import GameElement
 import sys
 from random import randint
 
+
 #### DO NOT TOUCH ####
 GAME_BOARD = None
 DEBUG = False
@@ -111,7 +112,7 @@ class Key(GameElement):
 
     def interact(self, player):
         player.inventory.append(self)
-        GAME_BOARD.draw_msg("You just acquired a key!")
+        GAME_BOARD.draw_msg("You just acquired a key! Now open the chest.")
         # print player.inventory
 
     IMAGE = "Key"
@@ -145,75 +146,36 @@ class TallTree(GameElement):
 ####   End class definitions    ####
 def initialize():
     """Put game initialization code here"""
+    print "I'm in the initialize function"
 
-    # initialize game with rocks in the following positions
-    rock_positions = [
-        (0, 4),
-        (1, 4),
-        (2, 4),
-        (4, 4),
-        (5, 4),
-        (7, 4)
-    ]
+    f = open("game_map.txt")
+    list_of_strings = f.read().split("\n")
+    
+    for y in range(len(list_of_strings)):
+        row = list_of_strings[y]
+        for i in range(len(row)):
+            if list_of_strings[y][i] == "w":
+                wall = Wall()
+                GAME_BOARD.register(wall)
+                GAME_BOARD.set_el(i, y, wall)
+            elif list_of_strings[y][i] == "t":
+                tall_tree = TallTree()
+                GAME_BOARD.register(tall_tree)
+                GAME_BOARD.set_el(i, y, tall_tree)
+            elif list_of_strings[y][i] == "r":
+                rock = Rock()
+                GAME_BOARD.register(rock)
+                GAME_BOARD.set_el(i, y, rock)
+            elif list_of_strings[y][i] == "s":
+                slider_rock = SliderRock()
+                GAME_BOARD.register(slider_rock)
+                GAME_BOARD.set_el(i, y, slider_rock)
+            elif list_of_strings[y][i] == "c":
+                chest = Chest()
+                GAME_BOARD.register(chest)
+                GAME_BOARD.set_el(i, y, chest)
 
-    rocks = []
-    for pos in rock_positions:
-        rock = Rock()
-        GAME_BOARD.register(rock)
-        GAME_BOARD.set_el(pos[0], pos[1], rock)
-        rocks.append(rock)
-
-    wall_positions = [
-        (0, 0),
-        (1, 0),
-        (2, 0),
-        (3, 0),
-        (4, 0),
-        (5, 0),
-        (6, 0),
-        (7, 0)
-    ]
-
-    walls = []
-    for pos in wall_positions:
-        wall = Wall()
-        GAME_BOARD.register(wall)
-        GAME_BOARD.set_el(pos[0], pos[1], wall)
-        walls.append(wall)
-
-    tall_tree1 = TallTree()
-    GAME_BOARD.register(tall_tree1)
-    GAME_BOARD. set_el(1, 7, tall_tree1)
-
-    tall_tree2 = TallTree()
-    GAME_BOARD.register(tall_tree2)
-    GAME_BOARD. set_el(6, 2, tall_tree2)
-
-    # make some rocks moveable
-    slider_rock1 = SliderRock()
-    GAME_BOARD.register(slider_rock1)
-    GAME_BOARD.set_el(3, 4, slider_rock1)
-
-    slider_rock2 = SliderRock()
-    GAME_BOARD.register(slider_rock2)
-    GAME_BOARD.set_el(6, 4, slider_rock2)    
-
-    # message board
-    #GAME_BOARD.draw_msg("This game is wicked awesome.")
-
-    # initialize game with objects
-    # gem1 = Gem()
-    # GAME_BOARD.register(gem1)
-    # GAME_BOARD.set_el(3, 1, gem1)
-
-    # gem2 = Gem()
-    # gem2.IMAGE = "OrangeGem"
-    # GAME_BOARD.register(gem2)
-    # GAME_BOARD.set_el(3, 3, gem2)
-
-    chest = Chest()
-    GAME_BOARD.register(chest)
-    GAME_BOARD.set_el(5, 6, chest)
+    f.close()
 
    # initialize game with player
     global PLAYER
@@ -262,7 +224,7 @@ def keyboard_handler():
     if direction:
         PLAYER.last_direction = direction
         PLAYER.move(direction)
-        GAME_BOARD.erase_msg()
+
 
 
 
