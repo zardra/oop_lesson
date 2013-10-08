@@ -98,13 +98,6 @@ class Character(GameElement):
                 
 
 class Gem(GameElement):
-    
-    # how to add gems to a player's inventory
-    def interact(self, player):
-        player.inventory.append(self)
-        GAME_BOARD.draw_msg("You just acquired a gem! You have %d items!" 
-            % (len(player.inventory)))
-
     IMAGE = "BlueGem"
     SOLID = False
 
@@ -119,20 +112,31 @@ class Key(GameElement):
     SOLID = False
 
 class Chest(GameElement):
+    IMAGE = "Chest"
+    SOLID = True
 
     def interact(self, player):
         for i in player.inventory:
             if type(i) == Key:
-                chest2 = Chest()
-                chest2.IMAGE = "ChestOpen"
+                chest2 = OpenChest()
                 GAME_BOARD.register(chest2)
                 GAME_BOARD.del_el(self.x, self.y)
                 GAME_BOARD.set_el(self.x, self.y, chest2)
-                chest2.SOLID = False
+                GAME_BOARD.draw_msg("Now claim your prize!")
 
 
-    IMAGE = "Chest"
+
+class OpenChest(Chest):
+    IMAGE = "ChestOpen"
     SOLID = True
+
+    def interact(self, player):
+        gem = Gem()
+        GAME_BOARD.register(gem)
+        GAME_BOARD.del_el(self.x, self.y)
+        GAME_BOARD.set_el(self.x, self.y, gem)
+        GAME_BOARD.draw_msg("You win!")
+
 
 class Wall(GameElement):
     IMAGE = "Wall"
@@ -146,7 +150,6 @@ class TallTree(GameElement):
 ####   End class definitions    ####
 def initialize():
     """Put game initialization code here"""
-    print "I'm in the initialize function"
 
     f = open("game_map.txt")
     list_of_strings = f.read().split("\n")
@@ -222,6 +225,7 @@ def keyboard_handler():
 
     # moves a character if allowed
     if direction:
+        GAME_BOARD.erase_msg()
         PLAYER.last_direction = direction
         PLAYER.move(direction)
 
